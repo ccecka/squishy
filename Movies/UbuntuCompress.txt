@@ -1,0 +1,2 @@
+sudo apt-get install ffmpeg libavcodec-extra-52
+ffmpeg -i test.avi -acodec libfaac -ab 128k -ac 2 -vcodec libx264 -vpre hq -crf 24 -threads 0 HandDemo.mp4

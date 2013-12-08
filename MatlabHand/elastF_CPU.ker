@@ -1,0 +1,59 @@
+const T Jinv41 = -Jinv11;
+const T Jinv42 = -Jinv12-Jinv22;
+const T Jinv43 = -Jinv13-Jinv23-Jinv33;
+const T V = (ORIENT/6.0f)/(Jinv11*Jinv22*Jinv33);
+assert(V > 0);
+
+T F11 = (x1-x4)*Jinv11;
+T F12 = (x1-x4)*Jinv12+(x2-x4)*Jinv22;
+T F13 = (x1-x4)*Jinv13+(x2-x4)*Jinv23+(x3-x4)*Jinv33;
+T F21 = (y1-y4)*Jinv11;
+T F22 = (y1-y4)*Jinv12+(y2-y4)*Jinv22;
+T F23 = (y1-y4)*Jinv13+(y2-y4)*Jinv23+(y3-y4)*Jinv33;
+T F31 = (z1-z4)*Jinv11;
+T F32 = (z1-z4)*Jinv12+(z2-z4)*Jinv22;
+T F33 = (z1-z4)*Jinv13+(z2-z4)*Jinv23+(z3-z4)*Jinv33;
+
+T FinvT11 = F22*F33-F32*F23;
+T FinvT12 = F23*F31-F21*F33;
+T FinvT13 = F21*F32-F22*F31;
+T FinvT33 = F11*FinvT11+F12*FinvT12+F13*FinvT13;    // Temp Det
+assert( FinvT33 > 0 );
+T PKc = BULK_MOD*logf(FinvT33) - SHEAR_MOD;
+FinvT33 = 1.0f/FinvT33;
+FinvT11 *= FinvT33;
+FinvT12 *= FinvT33;
+FinvT13 *= FinvT33;
+T FinvT21 = (F13*F32-F12*F33)*FinvT33;
+T FinvT22 = (F11*F33-F13*F31)*FinvT33;
+T FinvT23 = (F12*F31-F11*F32)*FinvT33;
+T FinvT31 = (F12*F23-F13*F22)*FinvT33;
+T FinvT32 = (F13*F21-F11*F23)*FinvT33;
+FinvT33 = (F11*F22-F12*F21)*FinvT33;
+
+T BodyF;
+F11 = SHEAR_MOD*F11+PKc*FinvT11;
+F12 = SHEAR_MOD*F12+PKc*FinvT12;
+F13 = SHEAR_MOD*F13+PKc*FinvT13;
+BodyF = 0.05f*(bx1+bx2+bx3+bx4);
+f_e[0] = V*(F11*Jinv11+F12*Jinv12+F13*Jinv13+BodyF+0.05f*bx1);
+f_e[3] = V*(F12*Jinv22+F13*Jinv23+BodyF+0.05f*bx2);
+f_e[6] = V*(F13*Jinv33+BodyF+0.05f*bx3);
+f_e[9] = V*(F11*Jinv41+F12*Jinv42+F13*Jinv43+BodyF+0.05f*bx4);
+F21 = SHEAR_MOD*F21+PKc*FinvT21;
+F22 = SHEAR_MOD*F22+PKc*FinvT22;
+F23 = SHEAR_MOD*F23+PKc*FinvT23;
+BodyF = 0.05f*(by1+by2+by3+by4);
+f_e[1] = V*(F21*Jinv11+F22*Jinv12+F23*Jinv13+BodyF+0.05f*by1);
+f_e[4] = V*(F22*Jinv22+F23*Jinv23+BodyF+0.05f*by2);
+f_e[7] = V*(F23*Jinv33+BodyF+0.05f*by3);
+f_e[10] = V*(F21*Jinv41+F22*Jinv42+F23*Jinv43+BodyF+0.05f*by4);
+F31 = SHEAR_MOD*F31+PKc*FinvT31;
+F32 = SHEAR_MOD*F32+PKc*FinvT32;
+F33 = SHEAR_MOD*F33+PKc*FinvT33;
+BodyF = 0.05f*(bz1+bz2+bz3+bz4);
+f_e[2] = V*(F31*Jinv11+F32*Jinv12+F33*Jinv13+BodyF+0.05f*bz1);
+f_e[5] = V*(F32*Jinv22+F33*Jinv23+BodyF+0.05f*bz2);
+f_e[8] = V*(F33*Jinv33+BodyF+0.05f*bz3);
+f_e[11] = V*(F31*Jinv41+F32*Jinv42+F33*Jinv43+BodyF+0.05f*bz4);
+
