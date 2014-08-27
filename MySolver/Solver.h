@@ -9,7 +9,7 @@ class Solver
  protected:
 
   Problem<T>& problem;
-  
+
   // The vbo copy of the coordinates
   vector_gpu<T> d_coord;
 
@@ -30,11 +30,11 @@ class Solver
     getProblem().getCoord() = d_coord;
     return getProblem().getCoord();
   }
-  virtual void setForce( matrix<T>& force ) {}
-  
+  virtual void setForce( matrix<T>& /*force*/ ) {}
+
   virtual void reset() {}
   virtual void increment() {}
-  inline void initVBO( void* d_vbo ) 
+  inline void initVBO( void* d_vbo )
   {
     d_coord.setPtr( (T*) d_vbo, getProblem().getCoord().size() );
     d_coord = getProblem().getCoord();

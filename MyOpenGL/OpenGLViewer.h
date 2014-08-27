@@ -261,7 +261,7 @@ int findNodeIndex( const matrix<MY_REAL>& coord,
   int node_min = NULL_NODE;
 
   // Loop through nodes
-  for( int i = 0; i < nodeList.size(); ++i ) {
+  for( unsigned i = 0; i < nodeList.size(); ++i ) {
     int n = (int) nodeList[i];
     Vec3<double> nX( coord(n,0), coord(n,1), coord(n,2) );
 

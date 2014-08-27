@@ -90,6 +90,7 @@ class AssemblySharedNZ : public AssemblyGPU<T>
     int vNPE = mesh.nVertexNodesPerElem();
     int nNodes = mesh.nNodes();
 
+    // Fudge factor of 100
     sMemBytes = cudaMaxSMEM() - 100;
 
     // Load or compute the nodal partition mesh.npart
@@ -462,9 +463,9 @@ class AssemblySharedNZ : public AssemblyGPU<T>
 	  combinedE.insert( ePartList[idn].begin(),
 			    ePartList[idn].end() );
 
-	  if( combinedE.size() * prob.elemDataSize() < sMemBytes ) {
+	  if( int(combinedE.size()) * prob.elemDataSize() < sMemBytes ) {
 	    // This fits, if it's smaller than the rest, keep it
-	    if( combinedE.size() < smallestCombinedE ) {
+	    if( int(combinedE.size()) < smallestCombinedE ) {
 	      smallestCombinedE = combinedE.size();
 	      smallestNN = nn;
 	    }

@@ -64,7 +64,7 @@ class vector_cpu
   }
 
   inline void zero() { h_v.assign( size(), 0 ); }
-  inline int size() const { return h_v.size(); }
+  inline size_t size() const { return h_v.size(); }
 
   inline       T& operator[]( int k )       { return h_v[k]; }
   inline const T& operator[]( int k ) const { return h_v[k]; }
@@ -112,12 +112,13 @@ class vector_gpu
   friend class vector_cpu<T>;
 
   T* d_v;
-  int N;
+  size_t N;
   bool destruct;
 
  public:
 
-  explicit vector_gpu( int N_ = 0 ) : d_v(cudaNew<T>(N_)), N(N_), destruct(true)
+  explicit vector_gpu( size_t N_ = 0 )
+      : d_v(cudaNew<T>(N_)), N(N_), destruct(true)
   {
     //cerr << "VGPU N Constructor" << endl;
   }
@@ -144,7 +145,7 @@ class vector_gpu
   }
 
   inline void zero() { cudaMemset( d_v, 0, N*sizeof(T) ); }
-  inline int size() const { return N; }
+  inline size_t size() const { return N; }
 
   // Cast to device pointer
   inline operator       T*()       { return d_v; }

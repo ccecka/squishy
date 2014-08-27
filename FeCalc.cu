@@ -38,6 +38,9 @@
 // Main runner
 int main( int argc, char* argv[] )
 {
+  (void) argc;
+  (void) argv; // quiet compiler
+
   cudaInit();
 
   matrix<MY_REAL> coord;
