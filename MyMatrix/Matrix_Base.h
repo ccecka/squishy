@@ -12,7 +12,7 @@ class matrix_base
 
   int n_rows;         // Num Rows
   int n_cols;         // Num Columns
-  
+
   vector_cpu<T> val;      // Val array
   //vector<T> val;
 
@@ -24,8 +24,8 @@ class matrix_base
   //matrix_base() : n_rows(0), n_cols(0), val() {};
   //matrix_base(int R, int C) : n_rows(R), n_cols(C), val() {};
   //matrix_base(int R, int C, int N) : n_rows(R), n_cols(C), val(N,0) {}
-  explicit matrix_base( int R = 0, int C = 0, int N = 0, T v = T() ) 
-    : n_rows(R), n_cols(C), val(N,v) {}
+  explicit matrix_base( int R = 0, int C = 0, int N = 0, T v = T() )
+      : n_rows(R), n_cols(C), val(N,v) {}
   // Destructor
   virtual ~matrix_base() {}
 
@@ -37,7 +37,7 @@ class matrix_base
   // Returns NOT_STORED if A(i,j) is not stored in val
   // Causes error if (i,j) is out of bounds of A
   virtual int IJtoK( int i, int j ) const = 0;
-  
+
 
   /* Common Methods */
 
@@ -46,7 +46,7 @@ class matrix_base
   inline int nRows() const { return n_rows; }
   inline int nCols() const { return n_cols; }
   inline int size()  const { return val.size(); }
-  inline const T operator()( int i, int j ) const 
+  inline const T operator()( int i, int j ) const
   {
     int k = IJtoK(i,j);                            // Find the value
     return (k == NOT_STORED ? 0 : val[k]);         // If not found, return 0
@@ -62,40 +62,40 @@ class matrix_base
   // Since the matrix is stored in a single vector allow the cast
   inline operator       vector_cpu<T>& ()       { return val; }
   inline operator const vector_cpu<T>& () const { return val; }
-  inline vector_cpu<T>& operator=( const vector_gpu<T>& val_gpu ) 
-  { 
-    return val = val_gpu; 
+  inline vector_cpu<T>& operator=( const vector_gpu<T>& val_gpu )
+  {
+    return val = val_gpu;
   }
-  inline vector_cpu<T>& operator=( const vector_cpu<T>& val_cpu ) 
-  { 
-    return val = val_cpu; 
+  inline vector_cpu<T>& operator=( const vector_cpu<T>& val_cpu )
+  {
+    return val = val_cpu;
   }
-  
+
   // Default Output
-  friend ostream& operator<<( ostream& os, const matrix_base<T>& A ) 
+  friend ostream& operator<<( ostream& os, const matrix_base<T>& A )
   {
     ios::fmtflags olda = os.setf(ios::left,ios::adjustfield);
     ios::fmtflags oldf = os.setf(ios::fixed,ios::floatfield);
-    
+
     int oldp = os.precision(6);
-    
+
     int ichars = (int) ceil( log10( A.nRows() ) );
     int jchars = (int) ceil( log10( A.nCols() ) );
-   
+
     for( int i = 0; i < A.nRows(); ++i ) {
       for( int j = 0; j < A.nCols(); ++j ) {
-	os << "(";
-	os.width( ichars );
-	os << i << ",";
-	os.width( jchars );
-	os << j << "):   " << A(i,j) << endl;
+        os << "(";
+        os.width( ichars );
+        os << i << ",";
+        os.width( jchars );
+        os << j << "):   " << A(i,j) << endl;
       }
     }
 
     os.setf(olda,ios::adjustfield);
     os.setf(oldf,ios::floatfield);
     os.precision(oldp);
-    
+
     return os;
   }
 
@@ -164,14 +164,14 @@ class MVM_GPU : public MVM<T>
   using MVM<T>::d_y;
   using MVM<T>::h_y;
  public:
- MVM_GPU( matrix_base<T>& A ) : MVM<T>(A), d_A(A.size()), d_x(A.nRows()) {}
+  MVM_GPU( matrix_base<T>& A ) : MVM<T>(A), d_A(A.size()), d_x(A.nRows()) {}
   virtual ~MVM_GPU() {}
   static string name() { return "MVM_GPU"; }
-  
+
   virtual void mvm_gpu( vector_gpu<T>& d_A, vector_gpu<T>& d_x ) = 0;
   inline vector_gpu<T>& getY_gpu() { return d_y; }
 
-  inline void mvm_cpu( vector_cpu<T>& h_A, vector_cpu<T>& h_x ) 
+  inline void mvm_cpu( vector_cpu<T>& h_A, vector_cpu<T>& h_x )
   {
     d_A = h_A;
     d_x = h_x;

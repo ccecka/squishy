@@ -12,7 +12,7 @@
 
 template <typename T>
 class matrix_dcoo : public matrix_sparse<T>
-{ 
+{
  protected:
 
   using matrix_base<T>::n_rows;      // Num Rows
@@ -21,14 +21,14 @@ class matrix_dcoo : public matrix_sparse<T>
   using matrix_base<T>::val;         // Matrix Entries array
 
   using matrix_base<T>::NOT_STORED;
-  
+
   using matrix_sparse<T>::IJ2K;
 
   vector<int> rowidx;             // Row Index array
   vector<int> colidx;             // Col Index array
 
  public:
- 
+
   matrix_dcoo() {}
   matrix_dcoo( list< pair<int,int> >& IJ ) { setProfileIJ( IJ ); }
   virtual ~matrix_dcoo() {}
@@ -38,7 +38,7 @@ class matrix_dcoo : public matrix_sparse<T>
   {
     IJList.sort();
     IJList.unique();
-   
+
     vector< pair<int,int> > IJ(IJList.begin(), IJList.end());
 
     // Determine rows, cols, and nonzeros
@@ -66,24 +66,24 @@ class matrix_dcoo : public matrix_sparse<T>
     // Then the off-diagonal entries
     for( int nz = 0; nz < NZ; ++nz ) {
       if( IJ[nz].first != IJ[nz].second ) {
-	IJ2K[ IJ[nz] ] = k;
-	rowidx[k] = IJ[nz].first;
-	colidx[k] = IJ[nz].second;
-	++k;
+        IJ2K[ IJ[nz] ] = k;
+        rowidx[k] = IJ[nz].first;
+        colidx[k] = IJ[nz].second;
+        ++k;
       }
     }
     assert( k == NZ );
   }
- 
+
   /* Accessor Methods */
   inline vector<int>& rowidx_vector() { return rowidx; }
   inline vector<int>& colidx_vector() { return colidx; }
- 
+
   // Convert the (i,j)th matrix index to the kth index directly into val
   inline int IJtoK( int i, int j ) const
   {
     assert( i >= 0 && i < n_rows && j >= 0 && j < n_cols );
-   
+
     if( i == j )
       return i;
 
@@ -95,17 +95,17 @@ class matrix_dcoo : public matrix_sparse<T>
       int row = rowidx[k];
       int col = colidx[k];
       if( i < row || (i == row && j < col) ) {
-	last = k - 1;
+        last = k - 1;
       } else if( i > row || (i == row && j > col) ) {
-	first = k + 1;
+        first = k + 1;
       } else {  // i == row && j == col
-	return k;
+        return k;
       }
     }
 
     // Was not found so return NOT_STORED
     return NOT_STORED;
-  }    
+  }
 };
 
 
@@ -121,14 +121,14 @@ class DCOO_MVM_CPU : public MVM_CPU<T>
   vector<int> colidx;
  public:
 
- DCOO_MVM_CPU( matrix_dcoo<T>& A ) 
-   : MVM_CPU<T>(A),
-    n_rows(A.nRows()),
-    rowidx(A.rowidx_vector()),
-    colidx(A.colidx_vector()) {}
+  DCOO_MVM_CPU( matrix_dcoo<T>& A )
+      : MVM_CPU<T>(A),
+      n_rows(A.nRows()),
+      rowidx(A.rowidx_vector()),
+      colidx(A.colidx_vector()) {}
   virtual ~DCOO_MVM_CPU() {}
   static string name() { return "DCOO_MVM_CPU"; }
-  
+
   inline void mvm_cpu( vector_cpu<T>& h_A, vector_cpu<T>& h_x )
   {
     DEBUG_TOTAL(StopWatch timer;  timer.start());
@@ -139,7 +139,7 @@ class DCOO_MVM_CPU : public MVM_CPU<T>
       T sum = h_A[row] * h_x[row];
       // Add up all NZs that are in this row (assume ordered)
       for( ; rowidx[nz] == row; ++nz )
-	sum += h_A[nz] * h_x[colidx[nz]];
+        sum += h_A[nz] * h_x[colidx[nz]];
       // Store the result
       h_y[row] = sum;
     }

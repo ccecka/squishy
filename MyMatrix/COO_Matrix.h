@@ -10,7 +10,7 @@
 
 template <typename T>
 class matrix_coo : public matrix_sparse<T>
-{ 
+{
  protected:
 
   using matrix_base<T>::n_rows;      // Num Rows
@@ -21,12 +21,12 @@ class matrix_coo : public matrix_sparse<T>
   using matrix_base<T>::NOT_STORED;
 
   using matrix_sparse<T>::IJ2K;
-  
+
   vector<int> rowidx;             // Row Index array
   vector<int> colidx;             // Col Index array
 
  public:
- 
+
   matrix_coo() {}
   matrix_coo( list< pair<int,int> >& IJ ) { setProfileIJ( IJ ); }
   virtual ~matrix_coo() {}
@@ -36,7 +36,7 @@ class matrix_coo : public matrix_sparse<T>
   {
     IJList.sort();
     IJList.unique();
-   
+
     vector< pair<int,int> > IJ(IJList.begin(), IJList.end());
 
     int NZ = IJ.size();
@@ -73,14 +73,14 @@ class COO_MVM_CPU : public MVM_CPU<T>
   vector<int> colidx;
  public:
 
- COO_MVM_CPU( matrix_coo<T>& A ) 
-   : MVM_CPU<T>(A),
-    n_rows(A.nRows()),
-    rowidx(A.rowidx_vector()),
-    colidx(A.colidx_vector()) {}
+  COO_MVM_CPU( matrix_coo<T>& A )
+      : MVM_CPU<T>(A),
+      n_rows(A.nRows()),
+      rowidx(A.rowidx_vector()),
+      colidx(A.colidx_vector()) {}
   virtual ~COO_MVM_CPU() {}
   static string name() { return "COO_MVM_CPU"; }
-  
+
   inline void mvm_cpu( vector_cpu<T>& h_A, vector_cpu<T>& h_x )
   {
     DEBUG_TOTAL(StopWatch timer;  timer.start());
@@ -91,7 +91,7 @@ class COO_MVM_CPU : public MVM_CPU<T>
       T sum = 0;
       // Add up all NZs that are in this row (assume ordered)
       for( ; rowidx[nz] == row; ++nz )
-	sum += h_A[nz] * h_x[colidx[nz]];
+        sum += h_A[nz] * h_x[colidx[nz]];
       // Store the result
       h_y[row] = sum;
     }

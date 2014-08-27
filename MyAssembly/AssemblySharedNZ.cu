@@ -15,7 +15,7 @@
 template <int TYPE, int BLOCK_SIZE, typename T>
 __global__ void assembleSharedNZ( T* coord, T* force,
 				  int* scatterPartPtr, int* scatterArray,
-				  int* eNumPart, 
+				  int* eNumPart,
 				  int* suppPtr, T* suppData,
 				  int* redPartPtr, int* redList,
 				  T* KF )
@@ -24,7 +24,7 @@ __global__ void assembleSharedNZ( T* coord, T* force,
   extern __shared__ T sMem[];
   __shared__ int sPtr[6];
   int tid = threadIdx.x;
-  
+
   // Prefetch pointers
   if( tid <= 1 ) {
     sPtr[tid] = scatterPartPtr[blockIdx.x + tid];
@@ -42,8 +42,8 @@ __global__ void assembleSharedNZ( T* coord, T* force,
   // Scatter nodal data to shared memory
 
   // Prefetch element coord and BC data
-  scatterXF3<BLOCK_SIZE>( tid + sPtr[0], sPtr[1], 
-			  coord, force, sMem, 
+  scatterXF3<BLOCK_SIZE>( tid + sPtr[0], sPtr[1],
+			  coord, force, sMem,
 			  scatterArray );
 
   __syncthreads();
@@ -52,7 +52,7 @@ __global__ void assembleSharedNZ( T* coord, T* force,
   int numE = sPtr[4];
   T* sE = sMem + tid * ((EDOF*(EDOF+3))/2);
   suppData += sPtr[5] + tid;
-  
+
   while( tid < numE ) {
 
     const T  x1 = sE[ 0],  y1 = sE[ 1],  z1 = sE[ 2];
@@ -75,8 +75,8 @@ __global__ void assembleSharedNZ( T* coord, T* force,
 				     x2, y2, z2, bx2, by2, bz2,
 				     x3, y3, z3, bx3, by3, bz3,
 				     x4, y4, z4, bx4, by4, bz4,
-				     Jinv11, Jinv12, Jinv13, 
-				     Jinv22, Jinv23, 
+				     Jinv11, Jinv12, Jinv13,
+				     Jinv22, Jinv23,
 				     Jinv33,
 				     sE );
 
@@ -86,10 +86,10 @@ __global__ void assembleSharedNZ( T* coord, T* force,
   }
 
   __syncthreads();
-  
+
   // Assemble
   reduce<BLOCK_SIZE>(threadIdx.x + sPtr[2], sPtr[3],
-		     sMem, KF, 
+		     sMem, KF,
 		     redList );
 }
 

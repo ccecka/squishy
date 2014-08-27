@@ -8,7 +8,7 @@ class AssemblySerial : public AssemblyCPU<T>
 {
   using Assembly_Interface<T>::prob;
   using Assembly_Interface<T>::LM;
-  
+
   using Assembly_Interface<T>::M_;
   using Assembly_Interface<T>::K_;
   using Assembly_Interface<T>::F_;
@@ -16,11 +16,11 @@ class AssemblySerial : public AssemblyCPU<T>
   using Assembly_Interface<T>::arrangeResults;
 
  public:
-  
+
   // Constructor
   template <template <typename> class MATRIX>
-  AssemblySerial( Problem<T>& p, MATRIX<T>& FEM_Matrix ) 
-    : AssemblyCPU<T>( p, FEM_Matrix ) {}
+  AssemblySerial( Problem<T>& p, MATRIX<T>& FEM_Matrix )
+      : AssemblyCPU<T>( p, FEM_Matrix ) {}
   virtual ~AssemblySerial() {}
 
   static string name() { return "AssemblySerial"; }
@@ -29,9 +29,9 @@ class AssemblySerial : public AssemblyCPU<T>
   {
     M_.zero();
     dmatrix<T> m_e( prob.nEDOF() );
-    
+
     int nElems = prob.mesh.nElems();
-    
+
     //StopWatch timer; timer.start();
 
     // Assemble M from elements
@@ -44,7 +44,7 @@ class AssemblySerial : public AssemblyCPU<T>
     //cerr << "AssemblySerialM Kernel: " << kernel_time << endl;
   }
 
-  void assembleKF_cpu( vector_cpu<T>& coord, vector_cpu<T>& f ) 
+  void assembleKF_cpu( vector_cpu<T>& coord, vector_cpu<T>& f )
   {
     K_.zero();
     //F_.zero();
@@ -69,16 +69,16 @@ class AssemblySerial : public AssemblyCPU<T>
       prob.tetrahedralElasticity( e, arrangedC, arrangedF, k_e, f_e );
       assemble( e, k_e, K_, f_e, F_ );
     }
-    
+
     INCR_TOTAL(AssemblyKF,timer.stop());
   }
 
-  void assembleF_cpu( vector_cpu<T>& coord, vector_cpu<T>& f ) 
+  void assembleF_cpu( vector_cpu<T>& coord, vector_cpu<T>& f )
   {
     //F_.zero();
     F_.assign( F_.size(), 0 );
     vector<T>  f_e( prob.nEDOF() );
-    
+
     int nNodes = prob.mesh.nNodes();
     int nDOF = prob.nNDOF();
     int nElems = prob.mesh.nElems();
@@ -95,9 +95,9 @@ class AssemblySerial : public AssemblyCPU<T>
       prob.tetrahedralForce( e, arrangedC, arrangedF, f_e );
       assemble( e, f_e, F_ );
     }
-    
+
     INCR_TOTAL(AssemblyF,timer.stop());
-  } 
+  }
 
 };
 

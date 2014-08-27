@@ -23,7 +23,7 @@ __global__ void computeElems( T* E,
   extern __shared__ T sMem[];
   __shared__ int sPtr[4];
   int tid = threadIdx.x;
-  
+
   if( tid <= 1 ) {
     sPtr[tid]   = nPartPtr[blockIdx.x + tid];
     sPtr[2+tid] = eIENPartPtr[blockIdx.x + tid];
@@ -41,11 +41,11 @@ __global__ void computeElems( T* E,
     if( n != -1 ) {
       if( sizeof(T) == 4 ) {
 	// float3
-	((float3*)sMem)[2*tid]   = ((float3*)coord)[n];	
+	((float3*)sMem)[2*tid]   = ((float3*)coord)[n];
 	((float3*)sMem)[2*tid+1] = ((float3*)force)[n];
       } else if( sizeof(T) == 8 ) {
 	// double3
-	((double3*)sMem)[2*tid]   = ((double3*)coord)[n];	
+	((double3*)sMem)[2*tid]   = ((double3*)coord)[n];
 	((double3*)sMem)[2*tid+1] = ((double3*)force)[n];
       }
     }
@@ -71,7 +71,7 @@ __global__ void computeElems( T* E,
     unsigned short n3 = (reinterpret_cast<ushort2*>(&nodes2))->y;
     unsigned short n4 = (reinterpret_cast<ushort2*>(&nodes2))->x;
     */
-    
+
     sTemp = sMem + 6 * (int) eIENArray[tid];   tid += BLOCK_SIZE;
     const T  x1 = sTemp[0],  y1 = sTemp[1],  z1 = sTemp[2];
     const T bx1 = sTemp[3], by1 = sTemp[4], bz1 = sTemp[5];
@@ -97,11 +97,11 @@ __global__ void computeElems( T* E,
 						x2, y2, z2, bx2, by2, bz2,
 						x3, y3, z3, bx3, by3, bz3,
 						x4, y4, z4, bx4, by4, bz4,
-						Jinv11, Jinv12, Jinv13, 
-						Jinv22, Jinv23, 
+						Jinv11, Jinv12, Jinv13,
+						Jinv22, Jinv23,
 						Jinv33,
 						E );
-      
+
       E += BLOCK_SIZE * ((EDOF*(EDOF+3))/2);
     }
   }
@@ -110,7 +110,7 @@ __global__ void computeElems( T* E,
 
 template <int BLOCK_SIZE, typename T>
 __global__ void assembleGlobalNZ( T* E, T* KF,
-				  int* redPartPtr, int* redList, 
+				  int* redPartPtr, int* redList,
 				  int nzPart, int nzTot )
 {
   extern __shared__ T sMem[];
@@ -121,7 +121,7 @@ __global__ void assembleGlobalNZ( T* E, T* KF,
   if( tid <= 1 ) {
     sPtr[tid] = redPartPtr[blockIdx.x+tid];
   }
-  
+
   __syncthreads();
 
   // Assemble all element data by NZ from E into sMem
@@ -130,7 +130,7 @@ __global__ void assembleGlobalNZ( T* E, T* KF,
   __syncthreads();
 
   // Copy the sMem into KF with a coalesced push
-  cuda_copy<BLOCK_SIZE>( tid, (int) min( nzPart, nzTot - nzPart*blockIdx.x ), 
+  cuda_copy<BLOCK_SIZE>( tid, (int) min( nzPart, nzTot - nzPart*blockIdx.x ),
 			 sMem, KF + nzPart * blockIdx.x );
 }
 

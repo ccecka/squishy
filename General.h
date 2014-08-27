@@ -48,16 +48,16 @@ const static int WARP_SIZE = 32;
 //#define NDEBUG
 #include <assert.h>
 #ifdef NDEBUG
-  /* helper for code location */
-  #define LOC std::cerr << __FILE__ << ":" << __LINE__ << "  "
-  /* macro for general debug print statements. */
-  #define COUT_TXT(text) LOC; std::cerr << text << std::endl
-  /* macro that dumps a variable name and its value */
-  #define COUT_VAR(var) LOC; std::cerr << (#var) << " = " << var << std::endl
+/* helper for code location */
+#  define LOC std::cerr << __FILE__ << ":" << __LINE__ << "  "
+/* macro for general debug print statements. */
+#  define COUT_TXT(text) LOC; std::cerr << text << std::endl
+/* macro that dumps a variable name and its value */
+#  define COUT_VAR(var) LOC; std::cerr << (#var) << " = " << var << std::endl
 #else
-  #define LOC
-  #define COUT_TXT(text)
-  #define COUT_VAR(var)
+#  define LOC
+#  define COUT_TXT(text)
+#  define COUT_VAR(var)
 #endif
 
 
@@ -66,14 +66,14 @@ const static int WARP_SIZE = 32;
 
 #ifdef TOTAL_TIMING
 
-#define DEBUG_TOTAL(s) s
-#define INCR_TOTAL(STAGE,TIME) total_##STAGE##_Time += TIME; \
-                               ++total_##STAGE##_Iter
-#define COUT_TOTAL(STAGE) cerr << "Total " << #STAGE << " Time: " \
-                               << total_##STAGE##_Time << "/" \
-                               << total_##STAGE##_Iter << " = " \
-                               << total_##STAGE##_Time/total_##STAGE##_Iter \
-                               << endl
+#  define DEBUG_TOTAL(s) s
+#  define INCR_TOTAL(STAGE,TIME) total_##STAGE##_Time += TIME;  \
+  ++total_##STAGE##_Iter
+#  define COUT_TOTAL(STAGE) cerr << "Total " << #STAGE << " Time: " \
+  << total_##STAGE##_Time << "/"                                  \
+  << total_##STAGE##_Iter << " = "                                \
+  << total_##STAGE##_Time/total_##STAGE##_Iter                    \
+  << endl
 
 double total_NR_Time = 0;
 int total_NR_Iter = 0;
@@ -92,9 +92,9 @@ int total_Frame_Iter = 0;
 
 #else
 
-#define DEBUG_TOTAL(s)
-#define INCR_TOTAL(STAGE,TIME)
-#define COUT_TOTAL(STAGE)
+#  define DEBUG_TOTAL(s)
+#  define INCR_TOTAL(STAGE,TIME)
+#  define COUT_TOTAL(STAGE)
 
 #endif
 

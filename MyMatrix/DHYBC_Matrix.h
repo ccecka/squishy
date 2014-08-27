@@ -5,13 +5,13 @@
 
 #include "MVMRepo.cu"
 
-/* Implements an HYB storiage format, with the assumption that 
+/* Implements an HYB storiage format, with the assumption that
  *  every the NZ are in NxN blocks */
 
 
 template <typename T>
 class matrix_dhybc : public matrix_sparse<T>
-{ 
+{
  protected:
 
   const static int N = 3;
@@ -22,29 +22,29 @@ class matrix_dhybc : public matrix_sparse<T>
   using matrix_base<T>::val;         // Matrix Entries array
 
   using matrix_base<T>::NOT_STORED;
-  
+
   using matrix_sparse<T>::IJ2K;
-  
+
   matrix<int,COL_MAJOR> ellidx;
-  
+
   vector<int> coorow;
   vector<int> coocol;
-  
+
  public:
 
   const static int INVALID_INDEX = -1;
-  
+
   matrix_dhybc() {}
   matrix_dhybc( list< pair<int,int> >& IJ ) { setProfileIJ( IJ ); }
   virtual ~matrix_dhybc() {}
 
   static string name() { return "DHYBC"; }
-  
+
   inline void setProfileIJ( list< pair<int,int> > IJList )
   {
     IJList.sort();
     IJList.unique();
-   
+
     vector< pair<int,int> > IJ(IJList.begin(), IJList.end());
 
     // Determine rows, cols, and nonzeros
@@ -52,7 +52,7 @@ class matrix_dhybc : public matrix_sparse<T>
     n_rows = IJ[NZ-1].first + 1;
     n_cols = 0;
     for( int k = 0; k < NZ; ++k ) n_cols = max(n_cols, IJ[k].second+1);
-    
+
     COUT_VAR(NZ);
 
     // To verify that the NZs come in NxN blocks, divide all IJ by N
@@ -78,7 +78,7 @@ class matrix_dhybc : public matrix_sparse<T>
       cout << IJ[nz].first << " " << IJ[nz].second << endl;
     }
 
-    // Remove all the diagonal blocks 
+    // Remove all the diagonal blocks
     // Reserve space in front for diagNZ
     // Put the rest of the diag block in the COO
     vector< pair<int,int> > offIJ(NZ - n_rows / N);
@@ -114,7 +114,7 @@ class matrix_dhybc : public matrix_sparse<T>
     NZ = IJ.size();
 
     COUT_VAR(NZ);
-    
+
     // The space reserved for the diagonal NZs
     int DNZ = round_up( n_rows, WARP_SIZE );
 
@@ -153,10 +153,10 @@ class matrix_dhybc : public matrix_sparse<T>
     for( int k = 0; k < n_rows/N; ++k ) {
       ell_NZ += min(num_ell_per_row, num_cols[k]);
     }
-    
+
     // Set sizes
-    ellidx = matrix<int,COL_MAJOR>( round_up(n_rows/N,WARP_SIZE), 
-				    num_ell_per_row, 
+    ellidx = matrix<int,COL_MAJOR>( round_up(n_rows/N,WARP_SIZE),
+				    num_ell_per_row,
 				    INVALID_INDEX );
 
     COUT_VAR( num_ell_per_row );
@@ -173,7 +173,7 @@ class matrix_dhybc : public matrix_sparse<T>
     // Construct arrays
     int IJ_index = 0;
     for( int k = 0; k < n_rows/N; ++k ) {
-      
+
       // Copy up to num_ell_per_row into the ELL
       int n = 0;
       while( k == IJ[IJ_index].first && n < num_ell_per_row ) {
@@ -184,8 +184,8 @@ class matrix_dhybc : public matrix_sparse<T>
 	  for( int k2 = 0; k2 < N; ++k2 ) {
 	    int r = N*IJ[IJ_index].first  + k1;
 	    int c = N*IJ[IJ_index].second + k2;
-	    IJ2K[ make_pair(r,c) ] = DNZ +  
-	      validx_ell.IJtoK(k,N*N*n + N*k1 + k2);
+	    IJ2K[ make_pair(r,c) ] = DNZ +
+                validx_ell.IJtoK(k,N*N*n + N*k1 + k2);
 	  }
 	}
 	ellidx(k,n) = IJ[IJ_index].second;
@@ -196,7 +196,7 @@ class matrix_dhybc : public matrix_sparse<T>
       // Copy the rest into the COO
       while( k == IJ[IJ_index].first ) {
 	// Wait to define the IJ2K until we sort and define coorow and coocol
-	
+
 	// For the entire block
 	for( int k1 = 0; k1 < N; ++k1 ) {
 	  for( int k2 = 0; k2 < N; ++k2 ) {
@@ -208,26 +208,26 @@ class matrix_dhybc : public matrix_sparse<T>
 	++IJ_index;
       }
     }
-    
+
     cooIJ.sort();
     coorow.resize( cooIJ.size() );
     coocol.resize( cooIJ.size() );
     for( int nz = 0; nz < cooIJ.size(); ++nz ) {
       coorow[nz] = IJ[nz].first;
       coocol[nz] = IJ[nz].second;
-      IJ2K[ make_pair( coorow[nz], coocol[nz] ) ] = DNZ + 
-	validx_ell.size() + 
-	nz;
+      IJ2K[ make_pair( coorow[nz], coocol[nz] ) ] = DNZ +
+          validx_ell.size() +
+          nz;
     }
 
     val = vector<T>( DNZ + validx_ell.size() + coorow.size() );
   }
- 
+
   /* Accessor Methods */
   inline matrix<int,COL_MAJOR>& ell_matrix() { return ellidx; }
   inline vector<int>& coorow_vector() { return coorow; }
   inline vector<int>& coocol_vector() { return coocol; }
-  
+
   using matrix_base<T>::operator=;
 
 };

@@ -19,13 +19,13 @@ class CG_Interface
   // Allocated memory for the solution vector
   vector_cpu<T> h_x;
   vector_gpu<T> d_x;
-  
+
  public:
-  
-  CG_Interface( MVM<T>& mvm_ ) 
-    : mvm(mvm_), 
-    MAX_ITER((int)sqrt(mvm.vec_size())),
-    h_x(mvm.vec_size()), d_x(mvm.vec_size()) {}
+
+  CG_Interface( MVM<T>& mvm_ )
+      : mvm(mvm_),
+        MAX_ITER((int)sqrt(mvm.vec_size())),
+        h_x(mvm.vec_size()), d_x(mvm.vec_size()) {}
   virtual ~CG_Interface() {}
 
   // Define the CPU Interface //
@@ -42,13 +42,13 @@ template <typename T>
 class CG_CPU_Interface : public CG_Interface<T>
 {
  protected:
-  
+
   using CG_Interface<T>::h_x;
   using CG_Interface<T>::d_x;
 
  public:
-  
- CG_CPU_Interface( MVM<T>& mvm ) : CG_Interface<T>(mvm) {}
+
+  CG_CPU_Interface( MVM<T>& mvm ) : CG_Interface<T>(mvm) {}
   virtual ~CG_CPU_Interface() {}
 
   // The CPU Interface //
@@ -56,7 +56,7 @@ class CG_CPU_Interface : public CG_Interface<T>
   inline vector_cpu<T>& getX_cpu() { return h_x; }
 
   // Implement the GPU Interface via the CPU Interface //
-  inline void CG_gpu( vector_gpu<T>& d_A, vector_gpu<T>& d_b ) 
+  inline void CG_gpu( vector_gpu<T>& d_A, vector_gpu<T>& d_b )
   {
     vector_cpu<T> h_A = d_A;
     vector_cpu<T> h_b = d_b;
@@ -94,4 +94,3 @@ class CG_GPU_Interface : public CG_Interface<T>
 };
 
 #endif
-

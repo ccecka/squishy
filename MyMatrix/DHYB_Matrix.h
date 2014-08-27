@@ -6,7 +6,6 @@
 #include "MVMRepo.cu"
 
 
-
 template <typename T>
 class matrix_dhyb : public matrix_sparse<T>
 {
@@ -171,13 +170,13 @@ class DHYB_MVM_CPU : public MVM_CPU<T>
   int n_rows;
   int DNZ;
 
- DHYB_MVM_CPU( matrix_dhyb<T>& A )
-   : MVM_CPU<T>(A),
-    ellidx( A.ell_matrix() ),
-    coorow( A.coorow_vector() ),
-    coocol( A.coocol_vector() ),
-    n_rows( A.nRows() ),
-    DNZ(A.DNZ) {}
+  DHYB_MVM_CPU( matrix_dhyb<T>& A )
+      : MVM_CPU<T>(A),
+      ellidx( A.ell_matrix() ),
+      coorow( A.coorow_vector() ),
+      coocol( A.coocol_vector() ),
+      n_rows( A.nRows() ),
+      DNZ(A.DNZ) {}
   virtual ~DHYB_MVM_CPU() {}
   static string name() { return "DHYB_MVM_CPU"; }
 
@@ -243,20 +242,20 @@ class DHYB_MVM_GPU : public MVM_GPU<T>
   vector_gpu<T> d_tempvals;
 
 
- DHYB_MVM_GPU( matrix_dhyb<T>& A )
-   : MVM_GPU<T>(A),
-    NUM_BLOCKS( DIVIDE_INTO(A.nRows(),BLOCK_SIZE) ),
-    d_ellidx( A.ell_matrix() ),
-    d_coorow( A.coorow_vector() ),
-    d_coocol( A.coocol_vector() ),
-    DNZ(A.DNZ),
-    num_rows( A.nRows() ),
-    ell_rows( A.ell_matrix().nRows() ),
-    ell_cols( A.ell_matrix().nCols() ),
-    ell_size( A.ell_matrix().size() ),
-    coo_size( A.coorow_vector().size() ),
-    num_warps( A.coorow_vector().size() / WARP_SIZE ),
-    num_blocks( DIVIDE_INTO(num_warps, WARPS_PER_BLOCK) ),
+  DHYB_MVM_GPU( matrix_dhyb<T>& A )
+      : MVM_GPU<T>(A),
+      NUM_BLOCKS( DIVIDE_INTO(A.nRows(),BLOCK_SIZE) ),
+      d_ellidx( A.ell_matrix() ),
+      d_coorow( A.coorow_vector() ),
+      d_coocol( A.coocol_vector() ),
+      DNZ(A.DNZ),
+      num_rows( A.nRows() ),
+      ell_rows( A.ell_matrix().nRows() ),
+      ell_cols( A.ell_matrix().nCols() ),
+      ell_size( A.ell_matrix().size() ),
+      coo_size( A.coorow_vector().size() ),
+      num_warps( A.coorow_vector().size() / WARP_SIZE ),
+      num_blocks( DIVIDE_INTO(num_warps, WARPS_PER_BLOCK) ),
     tail( num_warps * WARP_SIZE ),
     d_temprows( num_warps ),
     d_tempvals( num_warps ) {}
@@ -271,29 +270,29 @@ class DHYB_MVM_GPU : public MVM_GPU<T>
     T* d_A_ptr = (T*) d_A;
 
     dell_mvm<BLOCK_SIZE, USE_TEX>
-      <<<NUM_BLOCKS,BLOCK_SIZE>>>(DNZ, num_rows, ell_rows, ell_size,
-				  (int*) d_ellidx,
-				  d_A_ptr, (T*) d_x, (T*) d_y);
+        <<<NUM_BLOCKS,BLOCK_SIZE>>>(DNZ, num_rows, ell_rows, ell_size,
+                                    (int*) d_ellidx,
+                                    d_A_ptr, (T*) d_x, (T*) d_y);
 
     if( num_blocks > 0 ) {
 
       d_A_ptr += DNZ + ell_size;
 
       coo_mvm_flat<BLOCK_SIZE, USE_TEX>
-	<<<num_blocks,BLOCK_SIZE>>>(tail, WARP_SIZE,
-				    (int*) d_coorow, (int*) d_coocol,
-				    d_A_ptr, (T*) d_x, (T*) d_y,
-				    (int*) d_temprows, (T*) d_tempvals);
+          <<<num_blocks,BLOCK_SIZE>>>(tail, WARP_SIZE,
+                                      (int*) d_coorow, (int*) d_coocol,
+                                      d_A_ptr, (T*) d_x, (T*) d_y,
+                                      (int*) d_temprows, (T*) d_tempvals);
 
       coo_mvm_reduce<512>
-	<<<1,512>>>(num_warps, (int*) d_temprows, (T*) d_tempvals, (T*) d_y);
+          <<<1,512>>>(num_warps, (int*) d_temprows, (T*) d_tempvals, (T*) d_y);
 
       d_A_ptr += tail;
 
       coo_mvm_serial
-	<<<1,1>>>(coo_size-tail,
-		  ((int*)d_coorow)+tail, ((int*)d_coocol)+tail,
-		  d_A_ptr, (T*) d_x, (T*) d_y);
+          <<<1,1>>>(coo_size-tail,
+                    ((int*)d_coorow)+tail, ((int*)d_coocol)+tail,
+                    d_A_ptr, (T*) d_x, (T*) d_y);
 
     }
 

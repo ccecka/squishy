@@ -11,9 +11,9 @@
 #include <GL/glew.h>
 
 #if defined(__APPLE__) || defined(MACOSX)
-#include <GLUT/glut.h>
+#  include <GLUT/glut.h>
 #else
-#include <GL/glut.h>
+#  include <GL/glut.h>
 #endif
 
 // CUDA GL include
@@ -74,7 +74,7 @@ struct Keynode
   const static float adj_max_distSq = 0.25 * 0.25;
   // Display radius
   const static float radius = 0.03;
-  
+
   // List of "adjacent nodes" to the keynode and the scale of the force
   list< pair<int,float> > adjNodes;
 
@@ -82,7 +82,7 @@ struct Keynode
 
   // Construct a keynode as the nth node in the Mesh
   Keynode( int keynode_, const matrix<MY_REAL>& coord )
-  : keynode(keynode_)
+      : keynode(keynode_)
   {
     double nX = coord(keynode,0), nY = coord(keynode,1), nZ = coord(keynode,2);
     double mag = 1000;
@@ -111,7 +111,7 @@ struct Keynode
     //glVertexPointer(3, GL_FLOAT, 3*sizeof(float), BUF_OFF(0));
     glVertexPointer(nDim, GL_REAL, 0, BUF_OFF(nDim*keynode*sizeof(GL_REAL)));
     glEnableClientState(GL_VERTEX_ARRAY);
-    
+
     glDrawArrays(GL_POINTS, 0, 1);
   }
 
@@ -123,7 +123,7 @@ struct Keynode
     glColor3f(R,G,B);
     glTranslatef(x,y,z);
     glutSolidSphere(radius,10,10);
-      //glutSolidSphere(sqrt(adj_max_distSq),10,10);
+    //glutSolidSphere(sqrt(adj_max_distSq),10,10);
     glPopMatrix();
   }
 };
@@ -140,26 +140,26 @@ int active_keynode = NULL_NODE;
 /*****************************/
 
 /* Saves the current frame
-CAUTION: With a 1024X768 window, each frame is ~9 MB.
-         With a 640x480 window, each frame is ~3 MB.
+   CAUTION: With a 1024X768 window, each frame is ~9 MB.
+   With a 640x480 window, each frame is ~3 MB.
 */
 void saveFrame()
 {
   // Read pixels into vector
   vector<char> pixels(3*winW*winH);
   glReadPixels(0, 0, winW, winH, GL_RGB, GL_BYTE, &pixels[0]);
- 
+
   // Create corresponding filename
   int zero_digits = 7 - (int) ceil( log10( image_num+1 ) );
 
   string filename = "myFile";
   for( int d = 0; d < zero_digits; ++d ) filename += "0";
   filename += toString(image_num) + ".bin";
-  
+
   // Write to binary file
   cerr << "Saving " << filename << endl;
   writeBIN(pixels,filename.c_str());
-  
+
   // Increase image_num
   ++image_num;
 }
@@ -172,9 +172,9 @@ struct Line {
   Line( Vec3<T>& x1, Vec3<T>& x2 ) : point( x1 ), direction( x2 - x1 ) {}
 };
 
-/*Input - two ints (x and y) - usually the mouse coordinates 
+/*Input - two ints (x and y) - usually the mouse coordinates
  *Returns six values in a vector - the first three xf,yf,zf are the coordinates returned by gluUnProject for the point closest to the viewpoint, the last three xb,yb,zb are the coordinates farthest away to the viewpoint in the model space
-*/
+ */
 Line<double> unProject( int x, int y )
 {
   GLdouble modelMatrix[16];
@@ -185,7 +185,7 @@ Line<double> unProject( int x, int y )
   glGetIntegerv(GL_VIEWPORT,viewport);
 
   Vec3<double> backPoint, frontPoint;
-	
+
   gluUnProject( x, winH - y, 1.0,
 		modelMatrix, projMatrix, viewport,
 		&backPoint.x, &backPoint.y, &backPoint.z);
@@ -198,7 +198,7 @@ Line<double> unProject( int x, int y )
 }
 
 /* Creates a force matrix that can be used by the solver.
-input-
+   input-
    keynode is the index in the mesh of the node that will experience the force
    adjNodes is a list of the nodes adjacent to the keynode.
    x and y are coordinates used to determined the magnitude and direction of
@@ -210,12 +210,12 @@ void createForceMatrix( const matrix<MY_REAL>& coord,
 {
   int k = (int) keynode;
   Vec3<MY_REAL> keyP( coord(k,0), coord(k,1), coord(k,2) );
-  
+
   Line<double> projLine = unProject(x,y);
 
   Vec3<double>& lineP = projLine.point;
   Vec3<double>& lineV = projLine.direction;
-  
+
   Vec3<double> forceV = lineP - keyP;
 
   // Align the force with the plane of the screen
@@ -233,13 +233,13 @@ void createForceMatrix( const matrix<MY_REAL>& coord,
 
 
 /* Finds the closest node to the point clicked on by the user.
-input-
+   input-
    coord is the matrix containing the mesh coordinates.
    nodeList contains the list of nodes that you want to look through
-       T is a type that is castable to an int
+   T is a type that is castable to an int
    x,y are the coordinates of the mouse
-   dist_cutoff 
-output-
+   dist_cutoff
+   output-
    The index into nodeList which is closest to the unprojected (x,y)
    NULL_NODE if the closet is not less than the dist_cutoff
 */
@@ -256,7 +256,7 @@ int findNodeIndex( const matrix<MY_REAL>& coord,
   Vec3<double>& lineP = projLine.point;
   Vec3<double>& lineV = projLine.direction;
   double lineVmagSq = lineV.magSq();
-	
+
   double h_minSq = dist_cutoff;
   int node_min = NULL_NODE;
 
@@ -264,7 +264,7 @@ int findNodeIndex( const matrix<MY_REAL>& coord,
   for( int i = 0; i < nodeList.size(); ++i ) {
     int n = (int) nodeList[i];
     Vec3<double> nX( coord(n,0), coord(n,1), coord(n,2) );
-	
+
     // Get the shortest vector between the point and line
     nX -= lineP;
     nX -= lineV * (lineV.dot(nX)/lineVmagSq);
@@ -276,7 +276,7 @@ int findNodeIndex( const matrix<MY_REAL>& coord,
       node_min = i;
     }
   }
-  
+
   return (h_minSq < dist_cutoff  ?  node_min  :  NULL_NODE);
 }
 
@@ -301,10 +301,10 @@ void display()
   glVertexPointer(nDim, GL_REAL, 0, BUF_OFF(0));
   //glColorPointer(3, GL_FLOAT, sizeof(NodalData), BUF_OFF(3*sizeof(float)));
   glEnableClientState(GL_VERTEX_ARRAY);
-  //glEnableClientState(GL_COLOR_ARRAY);	
+  //glEnableClientState(GL_COLOR_ARRAY);
   glColor3f(1.0, 1.0, 1.0); //Hand Color
   //glDrawArrays(GL_POINTS, 0, nNodes);
-  
+
   // Render from the IBO
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -312,11 +312,11 @@ void display()
   glDrawElements(GL_TRIANGLES, ibo_size, GL_UNSIGNED_INT, BUF_OFF(0));
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glDisableClientState(GL_VERTEX_ARRAY);
-	
-  
+
+
   if( keynodeList.size() > 0 ) {
     const matrix<MY_REAL>& coord = solver->getCoord();
-    
+
     // Draw keynodes (Optimize?)
     for( int n = 0; n < keynodeList.size(); ++n ) {
       //keynodeList[n].drawKeynode(1.0,0.0,0.0);
@@ -329,7 +329,7 @@ void display()
 	// Draw the active keynode in different color
 	Keynode::drawKeynode(coord(gn,0), coord(gn,1), coord(gn,2),
 			     0.0, 0.0, 1.0);
-	
+
 	cout << "Update Count: " << ++update_count << endl;
 	// Update the force matrix
 	createForceMatrix( coord, keynodeList[active_keynode],
@@ -354,28 +354,28 @@ int iter = 0;
 void idle()
 {
   StopWatch mytimer; mytimer.start();
-  
+
   cudaGLMapBufferObject((void**)&d_vbo, vbo);
   solver->increment();
   solver->updateVBO();
   cudaGLUnmapBufferObject(vbo);
-  
+
   glutPostRedisplay();
 
   /*
   // If there's an active keynode
   if( active_keynode != NULL_NODE ) {
-    // We need to update the force matrix
-    createForceMatrix( solver->getCoord(), keynodeList[active_keynode],
-		       mouse_old_x, mouse_old_y );
-    solver->setForce( forceMatrix );
+  // We need to update the force matrix
+  createForceMatrix( solver->getCoord(), keynodeList[active_keynode],
+  mouse_old_x, mouse_old_y );
+  solver->setForce( forceMatrix );
   }
   */
 
   double frame_time = mytimer.stop();
   INCR_TOTAL(Frame,frame_time);
   cout << "Frame: " << ++iter << "    " << 1/frame_time << "fps    " << frame_time << "sec" << endl;
-  
+
   COUT_TOTAL(NR);
   COUT_TOTAL(AssemblyKF);
   COUT_TOTAL(AssemblyF);
@@ -390,39 +390,39 @@ void idle()
 void keyboard(unsigned char key, int /*x*/, int /*y*/)
 {
   //cerr << "Keyboard: " << key << ", " << (int) key << endl;
-	
-  switch( key ) {
-  case 'p':     // Pause
-    idle_on_key = !idle_on_key;
-    if( idle_on_key == 0 ) { glutIdleFunc(NULL); }
-    else                   { glutIdleFunc(idle); }
-    break;
-  case 27:      // Escape (esc) key
-    glBindBuffer(1, vbo);  glDeleteBuffers(1, &vbo);
-    glBindBuffer(1, ibo);  glDeleteBuffers(1, &ibo);
-    exit(0);
-  case 'r':
-    cudaGLMapBufferObject((void**)&d_vbo, vbo);
-    solver->reset();
-    cudaGLUnmapBufferObject(vbo);
-    keyboard('c',0,0);
-    image_num = 1;
-    break;
-  case 'R':     // Recording
-    record_key = !record_key;
-    break;
-  case 'c':     // Center View
-    const matrix<MY_REAL>& coord = solver->getCoord();
-    Vec3<double> model_center(0,0,0);
-    for( int n = 0; n < nNodes; ++n ) {
-      model_center.x += coord(n,0); 
-      model_center.y += coord(n,1); 
-      model_center.z += coord(n,2);
-    }
-    model_center /= nNodes;
 
-    camera.setViewPoint( model_center );
-    break;
+  switch( key ) {
+    case 'p':     // Pause
+      idle_on_key = !idle_on_key;
+      if( idle_on_key == 0 ) { glutIdleFunc(NULL); }
+      else                   { glutIdleFunc(idle); }
+      break;
+    case 27:      // Escape (esc) key
+      glBindBuffer(1, vbo);  glDeleteBuffers(1, &vbo);
+      glBindBuffer(1, ibo);  glDeleteBuffers(1, &ibo);
+      exit(0);
+    case 'r':
+      cudaGLMapBufferObject((void**)&d_vbo, vbo);
+      solver->reset();
+      cudaGLUnmapBufferObject(vbo);
+      keyboard('c',0,0);
+      image_num = 1;
+      break;
+    case 'R':     // Recording
+      record_key = !record_key;
+      break;
+    case 'c':     // Center View
+      const matrix<MY_REAL>& coord = solver->getCoord();
+      Vec3<double> model_center(0,0,0);
+      for( int n = 0; n < nNodes; ++n ) {
+        model_center.x += coord(n,0);
+        model_center.y += coord(n,1);
+        model_center.z += coord(n,2);
+      }
+      model_center /= nNodes;
+
+      camera.setViewPoint( model_center );
+      break;
   }
 }
 
@@ -466,12 +466,12 @@ void mouse(int button, int state, int x, int y)
       glutPostRedisplay();
       return;
     }
-    
+
     //cout << "Select Transfer: " << ++select_count << endl;
     // Figure out if we are seleting a keynode
     const matrix<MY_REAL>& coord = solver->getCoord();
     active_keynode = findNodeIndex(coord,keynodeList,x,y,Keynode::radius);
-    
+
   } else if( state == GLUT_UP ) {
 
     // Remove this button from the mouse state
@@ -500,7 +500,7 @@ void motion(int x, int y)
   // If there is an active node, then we don't use mouse for visualization
   if( active_keynode != NULL_NODE )
     return;
-  
+
   if( mouse_state == MOUSE_STATE_MIDDLE || mouse_state == MOUSE_STATE_BOTH ) {
     // Pan
     Vec3<float> dv(-0.004*dx, 0.004*dy, 0.0);
@@ -514,15 +514,15 @@ void motion(int x, int y)
     float dz = (1 - 0.01*dy);
     camera.zoom( dz );
   }
-  
+
   // Redisplay
   glutPostRedisplay();
 }
 
-void reshape(int width, int height) 
+void reshape(int width, int height)
 {
   winW = width; winH = height;
-	
+
   // Set Viewport
   glViewport(0, 0, winW, winH);
   // Reset Projection Matrix
@@ -548,7 +548,7 @@ void OpenGLViewer( Solver<MY_REAL>* solver_ )
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
   glutInitWindowSize(winW, winH);
   glutCreateWindow("CUDA Nonlinear FEM - Cris Cecka");
-      
+
   // Initialize necessary OpenGL extensions
   glewInit();
   if( glewInit() != GLEW_OK ) {
@@ -561,7 +561,7 @@ void OpenGLViewer( Solver<MY_REAL>* solver_ )
     fflush(stderr);
     return;
   }
-  
+
   // Create VBO
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -606,14 +606,14 @@ void OpenGLViewer( Solver<MY_REAL>* solver_ )
   for( int e = 0; e < mesh.nElems(); ++e ) {
     // If this element has neighbors on all faces, it can't have a surface face
     if( mesh.dxadj[e+1] - mesh.dxadj[e] == nFPE ) continue;
-    
+
     // For each node of e, count the number of face-adjacent elements
     map<int,int> nodeTally;
     for( int a = 0; a < nNPE; ++a )
       nodeTally[ IEN(e,a) ] = 0;
 
     // For each neighbor element
-    for( int e2Ptr = mesh.dxadj[e]; e2Ptr < mesh.dxadj[e+1]; ++e2Ptr ) {  
+    for( int e2Ptr = mesh.dxadj[e]; e2Ptr < mesh.dxadj[e+1]; ++e2Ptr ) {
       int e2 = mesh.dadjncy[e2Ptr];
 
       // For each node of e2
@@ -635,38 +635,38 @@ void OpenGLViewer( Solver<MY_REAL>* solver_ )
     for( int face = 0; face < nFPE; ++face ) {
       // Get the node tally sum for this face
       int sum = 0;
-      for( int a = 0; a < nNPF; ++a ) 
+      for( int a = 0; a < nNPF; ++a )
 	sum += nodeTally[ IEN(e,fIndex[face][a]) ];
 
       // If the node tally sum is even, add this face
       if( ISEVEN(sum) ) {
-	for( int a = 0; a < nNPF; ++a ) 
+	for( int a = 0; a < nNPF; ++a )
 	  h_ibo.push_back( IEN(e,fIndex[face][a]) );
       }
     }
-    
+
   }
-	
+
   // Save the ibo size
   ibo_size = h_ibo.size();
-  
+
   // Create IBO
   glGenBuffers(1, &ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibo_size*sizeof(h_ibo[0]), &h_ibo[0], 
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibo_size*sizeof(h_ibo[0]), &h_ibo[0],
 	       GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
+
 
 
   // Save a vector of the surface nodes
   surfaceNodes = h_ibo;
   sort(surfaceNodes.begin(),surfaceNodes.end());
-  surfaceNodes.erase( unique(surfaceNodes.begin(),surfaceNodes.end()), 
+  surfaceNodes.erase( unique(surfaceNodes.begin(),surfaceNodes.end()),
 		      surfaceNodes.end() );
 
   // Background Color
-  glClearColor(0.0, 0.0, 0.0, 1.0);  
+  glClearColor(0.0, 0.0, 0.0, 1.0);
 
   // OpenGL Fog for better depth perception
   glEnable(GL_DEPTH_TEST);
@@ -679,7 +679,7 @@ void OpenGLViewer( Solver<MY_REAL>* solver_ )
   glEnable(GL_FOG);
   glFogi(GL_FOG_MODE, GL_EXP);
   glFogf(GL_FOG_DENSITY,0.3);
-	
+
   // Register callbacks
   glutReshapeFunc(reshape);
   glutDisplayFunc(display);
@@ -692,7 +692,7 @@ void OpenGLViewer( Solver<MY_REAL>* solver_ )
   camera.zoom(2);
   // Center the View
   keyboard('c',0,0);
-  
+
   // Start the OpenGL Loop
   glutPostRedisplay();
   glutMainLoop();

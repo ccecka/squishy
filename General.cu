@@ -12,14 +12,14 @@
 //#define DEBUG_CUDA
 
 #ifdef DEBUG_CUDA
-#define CHECKCUDA(s) {cudaError_t err = cudaThreadSynchronize(); \
-                      if( err != cudaSuccess ) { \
-                        cerr << "CUDA " << s \
-                             << ": " << cudaGetErrorString(err) << endl; \
-                        exit(1); \
-                      }}
+#  define CHECKCUDA(s) {cudaError_t err = cudaThreadSynchronize();  \
+    if( err != cudaSuccess ) {                                      \
+      cerr << "CUDA " << s                                          \
+           << ": " << cudaGetErrorString(err) << endl;              \
+      exit(1);                                                      \
+    }}
 #else
-#define CHECKCUDA(s)
+#  define CHECKCUDA(s)
 #endif
 
 #define SAFECUDA(s) s;CHECKCUDA(#s)
@@ -33,7 +33,7 @@ struct StopWatch_GPU
   ~StopWatch_GPU() { cudaEventDestroy(startTime); cudaEventDestroy(stopTime); }
   inline void start() { cudaEventRecord(startTime,0); }
   inline double stop() { return elapsed(); }
-  inline double elapsed() 
+  inline double elapsed()
   {
     cudaEventRecord(stopTime,0);
     cudaEventSynchronize(stopTime);
@@ -60,8 +60,8 @@ inline void cudaMemcpyD2D( T* d_a, const T* d_b, int N )
 {
   DEBUG_TOTAL(StopWatch_GPU timer;  timer.start());
   SAFECUDA(cudaMemcpy( d_a, d_b, N*sizeof(T), cudaMemcpyDeviceToDevice ))
-  //CHECKCUDA("MemcpyD2D Error");
-  INCR_TOTAL(Transfer,timer.stop());
+      //CHECKCUDA("MemcpyD2D Error");
+      INCR_TOTAL(Transfer,timer.stop());
   //cout << "D2D: " << N << endl;
 }
 
@@ -140,7 +140,7 @@ inline void cudaInit(int device = 0)
     cout << "Error: No devices supporting CUDA" << endl;
     exit(1);
   }
-  
+
   if( device < 0 )               device = 0;
   if( device > deviceCount - 1 ) device = deviceCount - 1;
 
@@ -153,7 +153,7 @@ inline void cudaInit(int device = 0)
 
   cudaSetDevice(device);
   cerr << "Initializing " << deviceProp.name << "... ";
-  
+
   int* temp = cudaNew<int>(1);
   cudaDelete( temp );
 

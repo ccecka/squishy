@@ -32,69 +32,69 @@ class Assembly_Interface
  public:
 
   template <template <typename> class MATRIX>
-    Assembly_Interface( Problem<T>& p, MATRIX<T>& FEM_Matrix )
-   : prob(p), nEquations(0),
-    ID( prob.getMesh().nNodes(), prob.nNDOF() ),
-    LM( prob.getMesh().nElems(), prob.nEDOF() )
-      {
-	/* Compute the global data processing arrays */
-	Mesh<T>& mesh = prob.getMesh();
-	//matrix<char>& BCIndex = prob->BCIndex;
+  Assembly_Interface( Problem<T>& p, MATRIX<T>& FEM_Matrix )
+      : prob(p), nEquations(0),
+        ID( prob.getMesh().nNodes(), prob.nNDOF() ),
+        LM( prob.getMesh().nElems(), prob.nEDOF() )
+  {
+    /* Compute the global data processing arrays */
+    Mesh<T>& mesh = prob.getMesh();
+    //matrix<char>& BCIndex = prob->BCIndex;
 
-	int nElems = mesh.nElems();
-	int nNPE = mesh.nNodesPerElem();
-	//int nDim = mesh.nDim();
-	int nNodes = mesh.nNodes();
-	int nDoF = prob.nNDOF();
-	//int eDoF = prob.nEDOF();
+    int nElems = mesh.nElems();
+    int nNPE = mesh.nNodesPerElem();
+    //int nDim = mesh.nDim();
+    int nNodes = mesh.nNodes();
+    int nDoF = prob.nNDOF();
+    //int eDoF = prob.nEDOF();
 
-	matrix<char>& BCIndex = prob.BCIndex;
-	// Give each NDOF an equation number
-	for( int n = 0; n < nNodes; ++n ) {
-	  for( int d = 0; d < nDoF; ++d ) {
-	    if( !BCIndex(n,d) ) {
-	      // Prescribe this DOF an equation number
-	      ID(n,d) = nEquations;
-	      ++nEquations;
-	    } else {
-	      // this is a prescribed BC, do not assign equation #
-	      ID(n,d) = -1;
-	    }
-	  }
-	}
-
-	const matrix<int>& IEN = mesh.getIEN();
-
-	// The connectivity matrix
-	list< pair<int,int> > IJList;
-
-	// Determine the equation number by element and local node
-	for( int e = 0; e < nElems; ++e ) {
-	  for( int a = 0; a < nNPE; ++a ) {
-	    for( int d = 0; d < nDoF; ++d ) {
-	      int eq1 = ID( IEN(e,a), d );
-	      int m = a*nDoF + d;
-	      LM(e,m) = eq1;
-	      if( eq1 == -1 ) continue;
-
-	      IJList.push_back( make_pair(eq1,eq1) );
-
-	      for( int m2 = 0; m2 < m; ++m2 ) {
-		int eq2 = LM(e,m2);
-		if( eq2 == -1 ) continue;
-
-		IJList.push_back( make_pair(eq1,eq2) );
-		IJList.push_back( make_pair(eq2,eq1) );
-	      }
-	    }
-	  }
-	}
-
-	M_ = dmatrix<T>( nEquations );
-	FEM_Matrix = MATRIX<T>( IJList );
-	K_ = FEM_Matrix;
-	F_ = vector_cpu<T>( nEquations );
+    matrix<char>& BCIndex = prob.BCIndex;
+    // Give each NDOF an equation number
+    for( int n = 0; n < nNodes; ++n ) {
+      for( int d = 0; d < nDoF; ++d ) {
+        if( !BCIndex(n,d) ) {
+          // Prescribe this DOF an equation number
+          ID(n,d) = nEquations;
+          ++nEquations;
+        } else {
+          // this is a prescribed BC, do not assign equation #
+          ID(n,d) = -1;
+        }
       }
+    }
+
+    const matrix<int>& IEN = mesh.getIEN();
+
+    // The connectivity matrix
+    list< pair<int,int> > IJList;
+
+    // Determine the equation number by element and local node
+    for( int e = 0; e < nElems; ++e ) {
+      for( int a = 0; a < nNPE; ++a ) {
+        for( int d = 0; d < nDoF; ++d ) {
+          int eq1 = ID( IEN(e,a), d );
+          int m = a*nDoF + d;
+          LM(e,m) = eq1;
+          if( eq1 == -1 ) continue;
+
+          IJList.push_back( make_pair(eq1,eq1) );
+
+          for( int m2 = 0; m2 < m; ++m2 ) {
+            int eq2 = LM(e,m2);
+            if( eq2 == -1 ) continue;
+
+            IJList.push_back( make_pair(eq1,eq2) );
+            IJList.push_back( make_pair(eq2,eq1) );
+          }
+        }
+      }
+    }
+
+    M_ = dmatrix<T>( nEquations );
+    FEM_Matrix = MATRIX<T>( IJList );
+    K_ = FEM_Matrix;
+    F_ = vector_cpu<T>( nEquations );
+  }
 
 
   // Destructor
@@ -282,13 +282,13 @@ class AssemblyCPU : public Assembly_Interface<T>
 
   // Constructor
   template <template <typename> class MATRIX>
-    AssemblyCPU( Problem<T>& p, MATRIX<T>& FEM_Matrix )
-    : Assembly_Interface<T>( p, FEM_Matrix ),
-    coord( p.coord.size() ),
-    force( p.force.size() ),
-    d_M( M_ ),
-    d_K( K_ ),
-    d_F( F_ ) {}
+  AssemblyCPU( Problem<T>& p, MATRIX<T>& FEM_Matrix )
+      : Assembly_Interface<T>( p, FEM_Matrix ),
+      coord( p.coord.size() ),
+      force( p.force.size() ),
+      d_M( M_ ),
+      d_K( K_ ),
+      d_F( F_ ) {}
   // Destructor
   virtual ~AssemblyCPU() {}
 
@@ -341,13 +341,13 @@ class AssemblyGPU : public Assembly_Interface<T>
 
   // Constructor
   template <template <typename> class MATRIX>
-    AssemblyGPU( Problem<T>& p, MATRIX<T>& FEM_Matrix )
-    : Assembly_Interface<T>( p, FEM_Matrix ),
-    d_coord( p.coord.size() ),
-    d_force( p.force.size() ),
-    d_M( M_.size() ),
-    d_K( K_.size() ),
-    d_F( F_.size() ) {}
+  AssemblyGPU( Problem<T>& p, MATRIX<T>& FEM_Matrix )
+      : Assembly_Interface<T>( p, FEM_Matrix ),
+      d_coord( p.coord.size() ),
+      d_force( p.force.size() ),
+      d_M( M_.size() ),
+      d_K( K_.size() ),
+      d_F( F_.size() ) {}
   // Destructor
   virtual ~AssemblyGPU() {}
 

@@ -89,17 +89,17 @@ class NR_GPU : public Solver<T>
 
   NR_GPU( Assembly_Interface<T>* assembler_, CG_Interface<T>* cg_ )
       : Solver<T>( assembler_->getProblem() ),
-        assembler( assembler_ ),
-        cg( cg_ ),
-        N( assembler->nEquation() ),
-        NUM_BLOCKS( DIVIDE_INTO(N,BLOCK_SIZE) ),
-        d_M( precomputeM() ),
-        // d_coord = d_vbo on initialization
-        d_coordK( getProblem().getCoord().size() ),
-        d_coordP( getProblem().getCoord().size() ),
-        d_force( getProblem().getForce() ),
-        d_p( getProblem().getMomentum() ),
-        d_b( N ) {}
+      assembler( assembler_ ),
+      cg( cg_ ),
+      N( assembler->nEquation() ),
+      NUM_BLOCKS( DIVIDE_INTO(N,BLOCK_SIZE) ),
+      d_M( precomputeM() ),
+      // d_coord = d_vbo on initialization
+      d_coordK( getProblem().getCoord().size() ),
+      d_coordP( getProblem().getCoord().size() ),
+      d_force( getProblem().getForce() ),
+      d_p( getProblem().getMomentum() ),
+      d_b( N ) {}
 
   virtual ~NR_GPU() { delete assembler; delete cg; }
 

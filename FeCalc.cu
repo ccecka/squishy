@@ -48,8 +48,8 @@ int main( int argc, char* argv[] )
 
   //string fileOFF = "data/test.off";
   //string fileOFF = "data/test2.off";
-  string fileOFF = "data/hand28796v.off";
-  parseOFF( fileOFF.c_str(), coord, nDim, IEN, nNPE );
+  //string fileOFF = "data/hand28796v.off";
+  //parseOFF( fileOFF.c_str(), coord, nDim, IEN, nNPE );
 
   //string fileDAT = "data/Sphere_63.dat";
   //string fileDAT = "data/Sphere_305.dat";
@@ -57,12 +57,12 @@ int main( int argc, char* argv[] )
   //string fileDAT = "data/Sphere_407.dat";
   //string fileDAT = "data/Sphere_1701.dat";
   //string fileDAT = "data/Sphere_25351.dat";
-  //string fileDAT = "data/Torus_20k.dat";
+  string fileDAT = "data/Torus_20k.dat";
   //string fileDAT = "data/Torus_30k.dat";
   //string fileDAT = "data/Torus_37k.dat";
   //string fileDAT = "data/Torus_45k.dat";
   //string fileDAT = "data/Torus_55k.dat";
-  //parseDAT( fileDAT.c_str(), coord, nDim, IEN, nNPE );
+  parseDAT( fileDAT.c_str(), coord, nDim, IEN, nNPE );
 
   cout << "Points: " << coord.nRows() << endl;
   cout << "Elements: " << IEN.nRows() << endl;
@@ -146,7 +146,7 @@ inline double checkData( const vector<T1>& val,
 
   cerr << "AveError: " << left << setw(13) << maxE
        << "AveRelE: "  << left << setw(12) << errorR/N
-                       << left << setw(12) << maxR
+       << left << setw(12) << maxR
        << "L2RelError: " << sqrt(errorL2/normL2) << endl;
   return error;
 }
@@ -197,7 +197,7 @@ inline void testType( matrix_sparse<TREF>& Kexact,
 }
 
 
- // Validator
+// Validator
 int main( int argc, char* argv[] )
 {
   cout << endl;
@@ -298,22 +298,22 @@ int main( int argc, char* argv[] )
   cout << endl;
 
   testType<matrix_coo,AssemblySerial,COO_MVM_CPU>
-    ( Kcoo, Fcoo, Ycoo, problem );
+      ( Kcoo, Fcoo, Ycoo, problem );
 
   testType<matrix_coo,AssemblySerialOpt,COO_MVM_CPU>
-    ( Kcoo, Fcoo, Ycoo, problem );
+      ( Kcoo, Fcoo, Ycoo, problem );
 
   testType<matrix_csr,AssemblySharedNZ,CSR_MVM_GPU_Vector>
-    ( Kcoo, Fcoo, Ycoo, problem );
+      ( Kcoo, Fcoo, Ycoo, problem );
 
   testType<matrix_hyb,AssemblySharedNZ,HYB_MVM_GPU>
-    ( Kcoo, Fcoo, Ycoo, problem );
+      ( Kcoo, Fcoo, Ycoo, problem );
 
   testType<matrix_csr,AssemblyGlobalNZ,CSR_MVM_GPU_Vector>
-    ( Kcoo, Fcoo, Ycoo, problem );
+      ( Kcoo, Fcoo, Ycoo, problem );
 
   testType<matrix_hyb,AssemblyGlobalNZ,HYB_MVM_GPU>
-    ( Kcoo, Fcoo, Ycoo, problem );
+      ( Kcoo, Fcoo, Ycoo, problem );
 
   return 0;
 }

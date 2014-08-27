@@ -7,7 +7,7 @@
 class GL_Camera
 {
  private:
-	
+
   float dist;
 
   Vec3<float> point;
@@ -30,19 +30,19 @@ class GL_Camera
    */
 
  public:
-  
- GL_Camera() : dist(1), point(0,0,0), rightV(1,0,0), upV(0,1,0), eyeV(0,0,1) {}
-  
+
+  GL_Camera() : dist(1), point(0,0,0), rightV(1,0,0), upV(0,1,0), eyeV(0,0,1) {}
+
   // Note: You should call glLoadIdentity before using Render
   inline void render()
   {
     Vec3<float> eye = point + eyeV * dist;
 
     gluLookAt( eye.x, eye.y, eye.z,
-	       point.x, point.y, point.z,
-	       upV.x, upV.y, upV.z );
+               point.x, point.y, point.z,
+               upV.x, upV.y, upV.z );
   }
-  
+
   // Change the point we are viewing
   inline void move( const Vec3<float>& moveV )
   {
@@ -68,7 +68,7 @@ class GL_Camera
   {
     // Rotate eye vector about the right vector
     eyeV = eyeV * cosf(angle) + upV * sinf(angle);
-    eyeV.normalize();    
+    eyeV.normalize();
 
     // Compute the new up vector by cross product
     upV = eyeV.cross(rightV);

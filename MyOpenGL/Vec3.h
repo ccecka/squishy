@@ -119,8 +119,8 @@ class Vec3
   template <typename D>
   inline Vec3<T> cross(const Vec3<D>& v) const {
     return Vec3<T>(y*v.z - z*v.y,
-		   z*v.x - x*v.z,
-		   x*v.y - y*v.x);
+                   z*v.x - x*v.z,
+                   x*v.y - y*v.x);
   }
 
   inline T mag() const {

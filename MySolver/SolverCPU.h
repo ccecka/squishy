@@ -38,18 +38,18 @@ class NR_CPU : public Solver<T>
   using Solver<T>::getProblem;
   using Solver<T>::getMesh;
 
- NR_CPU( Assembly_Interface<T>* assembler_, CG_Interface<T>* cg_ )
-   : Solver<T>( assembler_->getProblem() ),
-    assembler( assembler_ ),
-    cg( cg_ ),
-    N( assembler->nEquation() ),
-    M( precomputeM() ),
-    coord( getProblem().getCoord() ),
-    coordK( coord ),
-    coordP( coord ),
-    force( getProblem().getForce() ),
-    p( getProblem().getMomentum() ),
-    b( N ) {}
+  NR_CPU( Assembly_Interface<T>* assembler_, CG_Interface<T>* cg_ )
+      : Solver<T>( assembler_->getProblem() ),
+      assembler( assembler_ ),
+      cg( cg_ ),
+      N( assembler->nEquation() ),
+      M( precomputeM() ),
+      coord( getProblem().getCoord() ),
+      coordK( coord ),
+      coordP( coord ),
+      force( getProblem().getForce() ),
+      p( getProblem().getMomentum() ),
+      b( N ) {}
 
   virtual ~NR_CPU() { delete assembler; delete cg; }
 
@@ -67,7 +67,7 @@ class NR_CPU : public Solver<T>
 
       // Get the midpoint
       for( int k = 0; k < N; ++k ) {
-	coordP[k] = (coord[k] + coordK[k]) / 2;
+        coordP[k] = (coord[k] + coordK[k]) / 2;
       }
 
       // Assemble
@@ -78,10 +78,10 @@ class NR_CPU : public Solver<T>
       // Compute the RHS, modify K to construct dH, and norm
       normb = 0;
       for( int k = 0; k < N; ++k ) {
-	// Multiply both sides by (2/DT) for efficiency (instead of scaling K)
-	K[k] += (2/(DT*DT)) * M[k];
-	b[k] = (2/DT) * (p[k] - M[k] * (coord[k] - coordK[k])/DT) - F[k];
-	normb += b[k] * b[k];
+        // Multiply both sides by (2/DT) for efficiency (instead of scaling K)
+        K[k] += (2/(DT*DT)) * M[k];
+        b[k] = (2/DT) * (p[k] - M[k] * (coord[k] - coordK[k])/DT) - F[k];
+        normb += b[k] * b[k];
       }
       // Correct the norm of b
       normb = (DT/2) * sqrt(normb);
@@ -94,7 +94,7 @@ class NR_CPU : public Solver<T>
 
       // Update the coord
       for( int k = 0; k < N; ++k ) {
-	coord[k] += dx[k];
+        coord[k] += dx[k];
       }
 
     }
